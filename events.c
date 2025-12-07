@@ -22,6 +22,8 @@
 
 #include "picohal.h"
 
+#include "grbl/state_machine.h"
+
 #ifndef PICOHAL_REG_STATE
 #define PICOHAL_REG_STATE       0x0001
 #endif
@@ -64,10 +66,10 @@ static uint8_t last_alarm;
 static void onStateChanged (sys_state_t state)
 {    
     system_state_t machine_state = ffs(state);
-    alarm_code_t alarm_code;
+    alarm_code_t alarm_code = Alarm_None;
 
     if(state & (STATE_ESTOP|STATE_ALARM)) {
-        char *alarm;
+        //char *alarm;
 
         machine_state = SystemState_Alarm;
         alarm_code = state_get_substate();

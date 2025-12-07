@@ -51,42 +51,9 @@ typedef enum {
     PICOHAL_MSG_KEEPALIVE = 0
 } picohal_response_t;
 
-static modbus_message_t keepalive_msg = {
-    .context = PICOHAL_MSG_KEEPALIVE,
-    .crc_check = false,
-    .adu[0] = PICOHAL_ADDRESS,
-    .adu[1] = ModBus_WriteRegister,
-    .adu[2] = (uint8_t)(PICOHAL_REG_KEEPALIVE >> 8),
-    .adu[3] = (uint8_t)(PICOHAL_REG_KEEPALIVE & 0xFF),
-    .adu[4] = 0,
-    .adu[5] = 0x01,
-    .tx_length = 8,
-    .rx_length = 8
-};
-
-static modbus_message_t reset_msg = {
-    .context = NULL,
-    .crc_check = false,
-    .adu[0] = PICOHAL_ADDRESS,
-    .adu[1] = ModBus_WriteRegister,
-    .adu[2] = (uint8_t)(PICOHAL_REG_DOUT >> 8),
-    .adu[3] = (uint8_t)(PICOHAL_REG_DOUT & 0xFF),
-    .adu[4] = 0,
-    .adu[5] = 0,
-    .tx_length = 8,
-    .rx_length = 8
-};
-
-static void picohal_rx_packet (modbus_message_t *msg);
-static void picohal_rx_exception (uint8_t code, void *context);
-static bool picohal_is_online;
-
-static const modbus_callbacks_t callbacks = {
-    .retries = PICOHAL_RETRIES,
-    .retry_delay = PICOHAL_RETRY_DELAY,    
-    .on_rx_packet = picohal_rx_packet,
-    .on_rx_exception = picohal_rx_exception
-};
+void picohal_rx_packet (modbus_message_t *msg);
+void picohal_rx_exception (uint8_t code, void *context);
+bool picohal_is_online;
 
 typedef struct {
     uint16_t index;

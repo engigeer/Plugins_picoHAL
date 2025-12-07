@@ -51,7 +51,40 @@ static io_ports_data_t digital;
 static picohal_aux_t aux_dout[PICOHAL_PORTS] = {};
 static picohal_aux_t aux_aout[2] = {};
 
-static void picohal_rx_packet (modbus_message_t *msg)
+static const modbus_callbacks_t callbacks = {
+    .retries = PICOHAL_RETRIES,
+    .retry_delay = PICOHAL_RETRY_DELAY,    
+    .on_rx_packet = picohal_rx_packet,
+    .on_rx_exception = picohal_rx_exception
+};
+
+static modbus_message_t keepalive_msg = {
+    .context = PICOHAL_MSG_KEEPALIVE,
+    .crc_check = false,
+    .adu[0] = PICOHAL_ADDRESS,
+    .adu[1] = ModBus_WriteRegister,
+    .adu[2] = (uint8_t)(PICOHAL_REG_KEEPALIVE >> 8),
+    .adu[3] = (uint8_t)(PICOHAL_REG_KEEPALIVE & 0xFF),
+    .adu[4] = 0,
+    .adu[5] = 0x01,
+    .tx_length = 8,
+    .rx_length = 8
+};
+
+// static modbus_message_t reset_msg = {
+//     .context = NULL,
+//     .crc_check = false,
+//     .adu[0] = PICOHAL_ADDRESS,
+//     .adu[1] = ModBus_WriteRegister,
+//     .adu[2] = (uint8_t)(PICOHAL_REG_DOUT >> 8),
+//     .adu[3] = (uint8_t)(PICOHAL_REG_DOUT & 0xFF),
+//     .adu[4] = 0,
+//     .adu[5] = 0,
+//     .tx_length = 8,
+//     .rx_length = 8
+// };
+
+void picohal_rx_packet (modbus_message_t *msg)
 {
     if(!(msg->adu[0] & 0x80)) {
 
@@ -75,7 +108,7 @@ static void raise_alarm (void *data)
     picohal_d_out[0] = 0; // null out all outputs in grblHAL
 }
 
-static void picohal_rx_exception (uint8_t code, void *context)
+void picohal_rx_exception (uint8_t code, void *context)
 {
     if(sys.cold_start){
         task_add_immediate(raise_alarm, NULL);
